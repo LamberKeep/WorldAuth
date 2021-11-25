@@ -1,0 +1,10 @@
+data:
+  nickname:
+    password: password
+    location:
+      World: world
+      X: 0.0
+      Y: 0.0
+      Z: 0.0
+      Yaw: 90.0
+      Pitch: 0.0

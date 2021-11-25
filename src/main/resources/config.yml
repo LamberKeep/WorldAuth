@@ -1,0 +1,3 @@
+worlds:
+  auth: "login"
+  hub-or-survival: "world"
