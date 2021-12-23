@@ -13,11 +13,11 @@ import java.util.logging.Level;
 
 public class DataManager {
 
-    private Main plugin;
+    private final WorldAuth plugin;
     private FileConfiguration dataConfig = null;
     private File configFile = null;
 
-    public DataManager(Main plugin){
+    public DataManager(WorldAuth plugin){
         this.plugin = plugin;
         // saves/initializes the config
         saveDefaultConfig();
