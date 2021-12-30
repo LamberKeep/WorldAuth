@@ -8,19 +8,18 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Objects;
 
 public final class WorldAuth extends JavaPlugin implements Listener {
 
-    HashMap<String, Long> mySession  = new HashMap<>(); // Session timer
+    HashMap<String, Long> Session  = new HashMap<>(); // Sessions
 
     public DataManager data;
-    public InventoryManager inv;
 
 
     @Override
@@ -35,14 +34,13 @@ public final class WorldAuth extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
+        e.setJoinMessage(null);
 
         Player p = e.getPlayer();
         String ip = Objects.requireNonNull(p.getAddress()).getAddress().toString();
 
-        if (!mySession.containsKey(ip) && System.currentTimeMillis() >= mySession.getOrDefault(ip, (long) 0)) {
-            e.setJoinMessage(null);
+        if (!Session.containsKey(ip) && System.currentTimeMillis() >= Session.getOrDefault(ip, (long) 0)) {
             p.teleport(Objects.requireNonNull(Bukkit.getWorld(Objects.requireNonNull(getConfig().getString("worlds.auth")))).getSpawnLocation());
-            inv.saveInventory(p);
             p.getInventory().clear();
             p.setGameMode(GameMode.ADVENTURE);
         }
@@ -50,7 +48,7 @@ public final class WorldAuth extends JavaPlugin implements Listener {
     }
 
     @EventHandler
-    public void onLeave(PlayerQuitEvent e) {
+    public void onLeave(PlayerQuitEvent e) throws IOException {
 
         Player p = e.getPlayer();
         String n = p.getName();
@@ -60,7 +58,7 @@ public final class WorldAuth extends JavaPlugin implements Listener {
 
         if (p.getWorld() != Bukkit.getWorld(Objects.requireNonNull(getConfig().getString("worlds.auth")))) {
 
-            mySession.put(Objects.requireNonNull(p.getAddress()).getAddress().toString(), System.currentTimeMillis() + 1800000);
+            Session.put(Objects.requireNonNull(p.getAddress()).getAddress().toString(), System.currentTimeMillis() + 3600000);
 
             data.getConfig().set("data."+n+".gamemode" , p.getGameMode().toString());
             data.getConfig().set("data."+n+".location.World" , Objects.requireNonNull(loc.getWorld()).getName());
@@ -69,6 +67,7 @@ public final class WorldAuth extends JavaPlugin implements Listener {
             data.getConfig().set("data."+n+".location.Z" , loc.getZ());
             data.getConfig().set("data."+n+".location.Yaw" , loc.getYaw());
             data.getConfig().set("data."+n+".location.Pitch" , loc.getPitch());
+            data.saveInventory(p);
             data.saveConfig();
 
         }
@@ -88,12 +87,12 @@ public final class WorldAuth extends JavaPlugin implements Listener {
                     else {
                         if (args[0].equals(this.data.getConfig().getString("data." + p.getName() + ".password"))) {
                             sender.sendMessage(ChatColor.GREEN + "Log in successfully.");
-                            if (this.data.getConfig().getString(loc) != null)
-                                Objects.requireNonNull(p.getPlayer()).teleport(new Location(Bukkit.getServer().getWorld(Objects.requireNonNull(data.getConfig().getString("data." + Objects.requireNonNull(p.getPlayer()).getName() + ".location.World"))), data.getConfig().getDouble("data."+ Objects.requireNonNull(p.getPlayer()).getName()+".location.X"), data.getConfig().getDouble(".location.Y"), data.getConfig().getDouble("data."+ Objects.requireNonNull(p.getPlayer()).getName()+".location.Z"), (float) data.getConfig().getDouble("data."+ Objects.requireNonNull(p.getPlayer()).getName()+".location.Yaw"), (float) data.getConfig().getDouble("data."+ Objects.requireNonNull(p.getPlayer()).getName()+".location.Pitch")));
-                            else
+                            if (this.data.getConfig().getString(loc) != null) {
+                                Objects.requireNonNull(p.getPlayer()).teleport(new Location(Bukkit.getServer().getWorld(Objects.requireNonNull(data.getConfig().getString("data." + Objects.requireNonNull(p.getPlayer()).getName() + ".location.World"))), data.getConfig().getDouble("data." + Objects.requireNonNull(p.getPlayer()).getName() + ".location.X"), data.getConfig().getDouble(".location.Y"), data.getConfig().getDouble("data." + Objects.requireNonNull(p.getPlayer()).getName() + ".location.Z"), (float) data.getConfig().getDouble("data." + Objects.requireNonNull(p.getPlayer()).getName() + ".location.Yaw"), (float) data.getConfig().getDouble("data." + Objects.requireNonNull(p.getPlayer()).getName() + ".location.Pitch")));
+                                data.restoreInventory(p);
+                            } else
                                 Objects.requireNonNull(p.getPlayer()).teleport(Objects.requireNonNull(Bukkit.getWorld(Objects.requireNonNull(getConfig().getString("worlds.hub-or-survival")))).getSpawnLocation()); // first join
                             Bukkit.broadcastMessage(ChatColor.YELLOW + Objects.requireNonNull(p.getPlayer()).getDisplayName() + ChatColor.YELLOW + " joined to the server");
-                            inv.restoreInventory(p);
                         } else {
                             sender.sendMessage(ChatColor.RED + "Bad password, try again!");
                         }
@@ -121,10 +120,10 @@ public final class WorldAuth extends JavaPlugin implements Listener {
 
         if (label.equalsIgnoreCase("logout")) {
             p.kickPlayer(Color.YELLOW+"Auth"+Color.GRAY+" | "+ChatColor.WHITE+"Successfully log out.");
-            mySession.remove(Objects.requireNonNull(p.getAddress()).getAddress().toString());
+            Session.remove(Objects.requireNonNull(p.getAddress()).getAddress().toString());
         }
 
-            if (label.equalsIgnoreCase("test") ) {
+        if (label.equalsIgnoreCase("test") ) {
             p.setFlySpeed(0.0f);
         }
 
@@ -140,5 +139,6 @@ public final class WorldAuth extends JavaPlugin implements Listener {
             }
         }.runTaskTimerAsynchronously(this, 0, 60);
     }
+
 
 }
