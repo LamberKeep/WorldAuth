@@ -1,2 +1,9 @@
-# WorldAuth
-A lite Spigot plugin which allows you to add authorization on the server without adding another server or bungeecord.
+## WorldAuth
+
+### Description
+**WorldAuth** - Spigot plugin which allows you to add authorization on single server.
+
+### Commands
+* /_register_
+* /_login_
+* /_logout_

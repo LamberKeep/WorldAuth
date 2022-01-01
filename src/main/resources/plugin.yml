@@ -8,12 +8,10 @@ website: exo.myvnc.com
 
 commands:
   register:
-    description: Allow to register.
+    description: Register new account.
     aliases: reg
   login:
-    description: Allows to login.
+    description: Log in account.
     aliases: l
   logout:
-    description: Allows to logout.
-  test:
-    description: Removes fly speed (test command).
+    description: Log out from account.
