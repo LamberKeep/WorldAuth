@@ -1,0 +1,40 @@
+# If you like the plugin and know several languages, you can help translate it for other users.
+# The translation's page is here: https://crowdin.com/project/worldauth
+
+# Placeholders:
+# %player% - player name.
+# %display-player% - display player name.
+# %world% - current player world.
+# %online% - current server online.
+# %attempts-used% - current used attempts (login only).
+# %attempts-max% - max attempts count (login only).
+
+plugin:
+  usage: "&eUsage: /worldauth reload"
+  reloaded: "&aPlugin reloaded successfully."
+  console: "&cCommand for player only, stop using that! >:("
+  permission: "&cYou don't have permission to do that!"
+
+titles:
+  auth: "&aAuthentication"
+  register: "&aRegistration"
+  sub-title: "&aEnter password in chat"
+
+auth:
+  success: "&aLog in successfully."
+  wrong: "&cWrong password, please try again! (%attempts-used%/%attempts-max%)"
+  kick: "&cYou entered the wrong password too many times."
+
+registed: "&aRegistered successfully, have a good time!"
+
+logout: "&aYou have successfully signed out!"
+
+changepass:
+  success: "&aPassword changed successfully!"
+  wrong: "&cWrong password, please try again!"
+  usage: "&eUsage: /changepassword <old-password> <new-password>"
+
+system:
+  join: "&e%player% joined to the server."
+  leave: "&e%player% left the server."
+  time-is-up: "&cAuth time was expired, please try again."

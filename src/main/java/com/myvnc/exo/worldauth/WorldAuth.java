@@ -1,27 +1,37 @@
 package com.myvnc.exo.worldauth;
 
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
+import org.bukkit.WorldCreator;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Objects;
+
+import static java.lang.Math.round;
 
 public final class WorldAuth extends JavaPlugin implements Listener {
-
-    HashMap<String, Long> session  = new HashMap<>(); // Sessions
     public DataManager data;
+    public LocaleFile locale;
+
+    HashMap<String, Long> session  = new HashMap<>(); // sessions timer
+    HashMap<Player, Long> register  = new HashMap<>(); // register timer
+    HashMap<Player, Integer>  attempts = new HashMap<>(); // auth attempts counter
 
     @Override
     public void onEnable() {
-        this.data = new DataManager(this);
+        data = new DataManager(this);
+        locale = new LocaleFile(this);
         getServer().getPluginManager().registerEvents(this, this);
         new WorldCreator(Objects.requireNonNull(getConfig().getString("worlds.auth"))).createWorld();
         saveDefaultConfig();
@@ -31,110 +41,135 @@ public final class WorldAuth extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
+        Player player = e.getPlayer();
+        String nick = player.getName();
+        String ip = Objects.requireNonNull(player.getAddress()).getAddress().toString();
+
         e.setJoinMessage(null);
 
-        Player p = e.getPlayer();
-        String ip = Objects.requireNonNull(p.getAddress()).getAddress().toString();
+        if (!session.containsKey(ip) || System.currentTimeMillis() >= session.get(ip)) {
+            player.teleport(Objects.requireNonNull(Bukkit.getWorld(Objects.requireNonNull(getConfig().getString("worlds.auth")))).getSpawnLocation());
+            player.setGameMode(GameMode.ADVENTURE);
+            player.setExp(1);
 
-        if (!session.containsKey(ip) && System.currentTimeMillis() >= session.getOrDefault(ip, (long) 0)) {
-            p.teleport(Objects.requireNonNull(Bukkit.getWorld(Objects.requireNonNull(getConfig().getString("worlds.auth")))).getSpawnLocation());
-            p.getInventory().clear();
-            p.setGameMode(GameMode.ADVENTURE);
+            register.put(player, System.currentTimeMillis() + getConfig().getLong("timer.register") * 1000);
+
+            if (data.getConfig().getString(nick + ".password") == null)
+                player.sendTitle(locale.getLocale(player, "titles.register"), locale.getLocale(player,"titles.sub-title"), 0, (int) (getConfig().getLong("timer.register") * 1000), 0);
+            else
+                player.sendTitle(locale.getLocale(player, "titles.auth"), locale.getLocale(player,"titles.sub-title"), 0, (int) (getConfig().getLong("timer.register") * 1000), 0);
+
+        } else {
+            Bukkit.broadcastMessage(ChatColor.YELLOW + nick + " joined to the server.");
+            data.loadInventory(player);
         }
 
     }
 
     @EventHandler
-    public void onLeave(PlayerQuitEvent e) throws IOException {
+    public void onLeave(PlayerQuitEvent e) {
+        Player player = e.getPlayer();
 
-        Player p = e.getPlayer();
-        String n = p.getName();
-        Location loc = p.getLocation();
+        if (player.getWorld() != Bukkit.getWorld(Objects.requireNonNull(getConfig().getString("worlds.auth")))) {
+            session.put(Objects.requireNonNull(player.getAddress()).getAddress().toString(), System.currentTimeMillis() + getConfig().getLong("timer.session") * 60000);
+            register.remove(player);
+            attempts.remove(player);
 
-        e.setQuitMessage(null);
+            data.getConfig().set(player.getName() + ".gamemode", player.getGameMode().toString());
+            data.saveLocation(player);
+            data.saveExp(player);
+            data.saveInventory(player);
 
-        if (p.getWorld() != Bukkit.getWorld(Objects.requireNonNull(getConfig().getString("worlds.auth")))) {
-            session.put(Objects.requireNonNull(p.getAddress()).getAddress().toString(), System.currentTimeMillis() + 3600000);
+            e.setQuitMessage(locale.getLocale(player, "system.leave"));
+        }
+        player.resetTitle();
+    }
 
-            // Save data location and inventory.
-            data.getConfig().set(n + ".gamemode", p.getGameMode().toString());
-            data.getConfig().set(n + ".location.World", Objects.requireNonNull(loc.getWorld()).getName());
-            data.getConfig().set(n + ".location.X", loc.getX());
-            data.getConfig().set(n + ".location.Y", loc.getY());
-            data.getConfig().set(n + ".location.Z", loc.getZ());
-            data.getConfig().set(n + ".location.Yaw", loc.getYaw());
-            data.getConfig().set(n + ".location.Pitch", loc.getPitch());
-            data.saveInventory(p);
-            data.saveConfig();
+    @EventHandler
+    public void OnChat(PlayerChatEvent event) {
+        String message = event.getMessage();
+        Player player = event.getPlayer();
+        String nick = player.getName();
+        if (player.getWorld() == Bukkit.getWorld(Objects.requireNonNull(getConfig().getString("worlds.auth")))) {
+            if (data.getConfig().getString(nick + ".password") == null) { // register
+                data.getConfig().set(nick + ".password", message);
+                data.saveConfig();
+                player.sendMessage(locale.getLocale(player, "registed"));
+                player.resetTitle();
+                Objects.requireNonNull(player.getPlayer()).teleport(Objects.requireNonNull(Bukkit.getWorld(Objects.requireNonNull(getConfig().getString("worlds.hub-or-survival")))).getSpawnLocation());
+                player.setGameMode(GameMode.SURVIVAL);
+                Bukkit.broadcastMessage(locale.getLocale(player, "system.join"));
+            } else { // login
+                if (message.equals(data.getConfig().getString(nick + ".password"))) {
+                    player.sendMessage(locale.getLocale(player, "auth.success"));
+
+                    register.remove(player);
+                    attempts.remove(player);
+                    player.resetTitle();
+
+                    data.loadLocation(player);
+                    data.loadInventory(player);
+                    data.loadExp(player);
+                    player.setGameMode(GameMode.valueOf(data.getConfig().getString(nick + ".gamemode")));
+
+                    Bukkit.broadcastMessage(locale.getLocale(player, "system.join"));
+                } else {
+                    attempts.put(player, attempts.getOrDefault(player, 0) + 1);
+                    if (attempts.get(player) < getConfig().getInt("join-attempts"))
+                        player.sendMessage(locale.getLocale(player, "auth.wrong"));
+                    else
+                        player.kickPlayer(locale.getLocale(player, "auth.kick"));
+                }
+            }
+            event.setCancelled(true);
         }
     }
 
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        Player p = (Player) sender;
-        String n = p.getName();
-        if (label.equalsIgnoreCase("login") || label.equalsIgnoreCase("l")) {
-            if (p.getWorld() == Bukkit.getWorld(Objects.requireNonNull(getConfig().getString("worlds.auth")))) {
-                if (args.length == 0)
-                    sender.sendMessage(ChatColor.RED + "Usage: /login <password>");
-                else {
-                    if (this.data.getConfig().getString(n + ".password") == null)
-                        sender.sendMessage(ChatColor.RED + "Not registered yet, use /register <password>");
-                    else {
-                        if (args[0].equals(this.data.getConfig().getString(n + ".password"))) {
-                            sender.sendMessage(ChatColor.GREEN + "Log in successfully.");
-
-                            // gamemode restore
-                            p.setGameMode(GameMode.valueOf(data.getConfig().getString(n + ".gamemode")));
-
-                            // location restore
-                            String loc = n + ".location.";
-                            Objects.requireNonNull(p.getPlayer()).teleport(new Location(Bukkit.getServer().getWorld(
-                                    Objects.requireNonNull(data.getConfig().getString(loc + "World"))),
-                                    data.getConfig().getDouble(loc + "X"),
-                                    data.getConfig().getDouble(loc + "Y"),
-                                    data.getConfig().getDouble(loc + "Z"),
-                                    (float) data.getConfig().getDouble(loc + "Yaw"),
-                                    (float) data.getConfig().getDouble(loc + "Pitch")));
-
-                            try {
-                                data.restoreInventory(p);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-
-                            Bukkit.broadcastMessage(ChatColor.YELLOW + p.getDisplayName() + ChatColor.YELLOW + " joined to the server");
-                        } else {
-                            sender.sendMessage(ChatColor.RED + "Bad password, try again!");
-                        }
-                    }
-                }
-            } else
-                sender.sendMessage(ChatColor.GREEN + "Already logged in!");
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(Objects.requireNonNull(locale.getConfig().getString("plugin.console")));
+            return false;
         }
 
-        if (label.equalsIgnoreCase("register") || label.equalsIgnoreCase("reg")) {
-            if (p.getWorld() == Bukkit.getWorld(Objects.requireNonNull(getConfig().getString("worlds.auth")))) {
-                if (args.length == 0)
-                    sender.sendMessage(ChatColor.RED + "Usage: /register <password>");
-                else {
-                    if (this.data.getConfig().getString(n + ".password") == null) {
-                        data.getConfig().set(n + ".password", args[0]);
+        Player player = (Player) sender;
+        String nick = player.getName();
+
+        if (label.equalsIgnoreCase("worldauth") || label.equalsIgnoreCase("wa")) {
+            if (!player.hasPermission("doublejump.admin")) {
+                player.sendMessage(locale.getLocale(player, "plugin.permission"));
+                return true;
+            }
+
+            if (args.length == 0)
+                player.sendMessage(locale.getLocale(player, "plugin.usage"));
+            else {
+                if (args[0].equalsIgnoreCase("reload")) {
+                    reloadConfig();
+                    data.reloadConfig();
+                    locale.reloadConfig();
+                    player.sendMessage(locale.getLocale(player, "plugin.reloaded"));
+                }
+            }
+        }
+
+        if (label.equalsIgnoreCase("logout") || label.equalsIgnoreCase("q")) {
+            player.kickPlayer(locale.getLocale(player,"logout"));
+            session.remove(Objects.requireNonNull(player.getAddress()).getAddress().toString());
+        }
+
+        if (label.equalsIgnoreCase("changepassword") || label.equalsIgnoreCase("changepass")) {
+            if (!(player.getWorld() == Bukkit.getWorld(Objects.requireNonNull(getConfig().getString("worlds.auth"))))) {
+                if (args.length == 2) {
+                    if (args[0].equals(data.getConfig().getString(nick + ".password"))) {
+                        data.getConfig().set(nick + ".password", args[1]);
                         data.saveConfig();
-                        sender.sendMessage(ChatColor.GREEN + "Registered successfully.");
-                        Objects.requireNonNull(p.getPlayer()).teleport(Objects.requireNonNull(Bukkit.getWorld(Objects.requireNonNull(getConfig().getString("worlds.hub-or-survival")))).getSpawnLocation());
-                        p.setGameMode(GameMode.SURVIVAL);
+                        sender.sendMessage(locale.getLocale(player, "changepass.success"));
                     } else
-                        sender.sendMessage(ChatColor.RED + "Already registered, use /login <password>");
-                }
-            } else
-                sender.sendMessage(ChatColor.GREEN + "Already registered!");
+                        sender.sendMessage(locale.getLocale(player, "changepass.wrong"));
+                } else
+                    sender.sendMessage(locale.getLocale(player, "changepass.usage"));
+            }
         }
-
-        if (label.equalsIgnoreCase("logout")) {
-            p.kickPlayer("- Authorization -\nYou have successfully signed out!");
-            session.remove(Objects.requireNonNull(p.getAddress()).getAddress().toString());
-        }
-
         return false;
     }
 
@@ -142,10 +177,16 @@ public final class WorldAuth extends JavaPlugin implements Listener {
         new BukkitRunnable() {
             @Override
             public void run() {
-            for(Player p : Objects.requireNonNull(Bukkit.getWorld(Objects.requireNonNull(getConfig().getString("worlds.auth")))).getPlayers())
-                p.sendMessage(ChatColor.YELLOW + "Auth" + ChatColor.GRAY + " | " + ChatColor.WHITE + "Please log in.");
-            }
-        }.runTaskTimerAsynchronously(this, 0, 60);
-    }
+                for(Player player: Objects.requireNonNull(Bukkit.getWorld(Objects.requireNonNull(getConfig().getString("worlds.auth")))).getPlayers()) {
+                    float timeLeft = (float) ((register.get(player)) - System.currentTimeMillis()) / 1000; // in sec
 
+                    if (timeLeft > 0) {
+                        player.setLevel(round(timeLeft));
+                        player.setExp(timeLeft / getConfig().getLong("timer.register"));
+                    } else
+                        player.kickPlayer(locale.getLocale(player, "system.time-is-up"));
+                }
+            }
+        }.runTaskTimer(this, 0, 2); // 20 ticks = 1 second
+    }
 }

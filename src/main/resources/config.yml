@@ -1,3 +1,11 @@
+join-attempts: 3
+
+timer:
+  # Time for a players to log into the server (in seconds).
+  register: 30
+  # Time of player login under the same ip w/o auth (in minutes).
+  session: 30
+
 worlds:
   auth: "login"
   hub-or-survival: "world"

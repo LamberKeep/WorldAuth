@@ -7,11 +7,19 @@ description: A lite Spigot plugin which allows you to add authorization on the s
 website: exo.myvnc.com
 
 commands:
-  register:
-    description: Register new account.
-    aliases: reg
-  login:
-    description: Log in account.
-    aliases: l
+  worldauth:
+    description: DoubleJump commands
+    aliases: wa
+
   logout:
     description: Log out from account.
+    aliases: q
+
+  changepassword:
+    description: Change your password.
+    aliases: changepass
+
+permissions:
+  worldauth.admin:
+    description: Allows to use admins commands.
+    default: op
