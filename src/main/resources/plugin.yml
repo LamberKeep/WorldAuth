@@ -8,7 +8,7 @@ website: exo.myvnc.com
 
 commands:
   worldauth:
-    description: DoubleJump commands
+    description: WorldAuth commands
     aliases: wa
 
   logout:

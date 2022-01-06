@@ -3,11 +3,11 @@
 
 ## Commands
 * /_worldauth_ - plugin command \***NEW**\*
-* /_changepassword_ (_/changepass_)
-* /_logout_
+* /_changepassword_ (_/changepass_) - Change your password.
+* /_logout_ - Log out from account.
 
 ## Permissions
-* worldauth.reload
+* worldauth.admin - Allows to use admins commands.
 
 ## Translation
 If you like the plugin and know several languages, you can help translate it for other users.
