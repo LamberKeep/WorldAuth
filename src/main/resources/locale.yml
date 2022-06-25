@@ -1,13 +1,15 @@
 # Locales: https://crowdin.com/project/worldauth
 # If you like the plugin and know several languages, you can help.
 # Follow the link above, choose the language you want and translate.
-# Thank you!
+# Thank you <3
 
 # Placeholders:
 # %player% - player name.
 # %display-player% - display player name.
+# %ip% - player ip.
 # %world% - current player world.
 # %online% - current server online.
+# %max-online% - max server online.
 # %attempts-used% - current used attempts (login only).
 # %attempts-max% - max attempts count (login only).
 
@@ -23,9 +25,10 @@ titles:
   sub-title: "&aEnter password in chat"
 
 auth:
-  success: "&aLog in successfully."
+  success: "&aLog in successfully (%ip%)."
   wrong: "&cWrong password, please try again! (%attempts-used%/%attempts-max%)"
   kick: "&cYou entered the wrong password too many times."
+  command: "&cYou cannot use commands until you logged in!"
 
 registed: "&aRegistered successfully, have a good time!"
 

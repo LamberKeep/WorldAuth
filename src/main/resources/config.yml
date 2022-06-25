@@ -1,5 +1,11 @@
 join-attempts: 3
 
+force-gamemode:
+  # Change player gamemode after login by force.
+  enabled: false
+  # Available values: SURVIVAL, ADVENTURE, CREATIVE, SPECTATOR.
+  gamemode: "SURVIVAL"
+
 timer:
   # Time for a players to log into the server (in seconds).
   register: 30
@@ -7,5 +13,5 @@ timer:
   session: 30
 
 worlds:
-  auth: "login"
+  auth: "world_auth"
   hub-or-survival: "world"

@@ -6,19 +6,17 @@
 
     <groupId>com.myvnc.exo</groupId>
     <artifactId>WorldAuth</artifactId>
-    <version>1.2</version>
+    <version>1.3</version>
     <packaging>jar</packaging>
 
     <name>WorldAuth</name>
 
-    <description>A lite Spigot plugin which allows you to add authorization on the server without adding another server
-        or bungeecord.
-    </description>
+    <description>Spigot plugin which allows you to add authorization on single server.</description>
+
     <properties>
         <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-    <url>exo.myvnc.com</url>
 
     <build>
         <plugins>

@@ -1,5 +1,6 @@
-package com.myvnc.exo.worldauth;
+package lamberkeep.worldauth.data;
 
+import lamberkeep.worldauth.WorldAuth;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -14,13 +15,13 @@ import java.io.InputStreamReader;
 import java.util.Objects;
 import java.util.logging.Level;
 
-public class DataManager {
+public class Data {
 
     private final WorldAuth plugin;
     private FileConfiguration dataConfig = null;
     private File configFile = null;
 
-    public DataManager(WorldAuth plugin) {
+    public Data(WorldAuth plugin) {
         this.plugin = plugin;
         // saves/initializes the config
         saveDefaultConfig();
@@ -57,8 +58,20 @@ public class DataManager {
         }
     }
 
-    public void saveInventory(Player p) {
-        String config = p.getName() + ".inventory.";
+    // # DATA MANAGER
+    public void saveData(Player p) {
+        Location loc = p.getLocation();
+
+        String config = p.getName() + ".location.";
+
+        getConfig().set(config + "World", Objects.requireNonNull(loc.getWorld()).getName());
+        getConfig().set(config + "X", loc.getX());
+        getConfig().set(config + "Y", loc.getY());
+        getConfig().set(config + "Z", loc.getZ());
+        getConfig().set(config + "Yaw", loc.getYaw());
+        getConfig().set(config + "Pitch", loc.getPitch());
+
+        config = p.getName() + ".inventory.";
 
         getConfig().set(config + "Health", p.getHealth());
         getConfig().set(config + "Food", p.getFoodLevel());
@@ -71,16 +84,31 @@ public class DataManager {
             getConfig().set(config + "Content." + i, p.getInventory().getContents()[i]);
         }
 
-        saveConfig();
-
         // drop
         p.getInventory().clear();
         p.setHealth(20);
         p.setFoodLevel(20);
+
+        config = p.getName() + ".exp.";
+
+        getConfig().set(config + "Level", p.getLevel());
+        getConfig().set(config + "Progress", p.getExp());
+
+        saveConfig();
     }
 
-    public void loadInventory(Player p) {
-        String config = p.getName() + ".inventory.";
+    public void loadData(Player p) {
+        String config = p.getName() + ".location.";
+
+        Objects.requireNonNull(p.getPlayer()).teleport(new Location(Bukkit.getServer().getWorld(
+                Objects.requireNonNull(getConfig().getString(config + "World"))),
+                getConfig().getDouble(config + "X"),
+                getConfig().getDouble(config + "Y"),
+                getConfig().getDouble(config + "Z"),
+                (float) getConfig().getDouble(config + "Yaw"),
+                (float) getConfig().getDouble(config + "Pitch")));
+
+        config = p.getName() + ".inventory.";
 
         p.setHealth(getConfig().getDouble(config + "Health"));
         p.setFoodLevel(getConfig().getInt(config + "Food"));
@@ -100,45 +128,8 @@ public class DataManager {
             content[i] = getConfig().getItemStack(config + "Content." + i);
         }
         p.getInventory().setContents(content);
-    }
 
-    public void saveLocation(Player p) {
-        String config = p.getName() + ".location.";
-        Location loc = p.getLocation();
-
-        getConfig().set(config + "World", Objects.requireNonNull(loc.getWorld()).getName());
-        getConfig().set(config + "X", loc.getX());
-        getConfig().set(config + "Y", loc.getY());
-        getConfig().set(config + "Z", loc.getZ());
-        getConfig().set(config + "Yaw", loc.getYaw());
-        getConfig().set(config + "Pitch", loc.getPitch());
-
-        saveConfig();
-    }
-
-    public void loadLocation(Player p) {
-        String config = p.getName() + ".location.";
-
-        Objects.requireNonNull(p.getPlayer()).teleport(new Location(Bukkit.getServer().getWorld(
-                Objects.requireNonNull(getConfig().getString(config + "World"))),
-                getConfig().getDouble(config + "X"),
-                getConfig().getDouble(config + "Y"),
-                getConfig().getDouble(config + "Z"),
-                (float) getConfig().getDouble(config + "Yaw"),
-                (float) getConfig().getDouble(config + "Pitch")));
-    }
-
-    public void saveExp(Player p) {
-        String config = p.getName() + ".exp.";
-
-        getConfig().set(config + "Level", p.getLevel());
-        getConfig().set(config + "Progress", p.getExp());
-
-        saveConfig();
-    }
-
-    public void loadExp(Player p) {
-        String config = p.getName() + ".exp.";
+        config = p.getName() + ".exp.";
 
         p.setLevel(getConfig().getInt(config + "Level"));
         p.setExp((float) getConfig().getDouble(config + "Progress"));

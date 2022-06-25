@@ -1,10 +1,9 @@
 name: WorldAuth
 version: '${project.version}'
-main: com.myvnc.exo.worldauth.WorldAuth
+main: lamberkeep.worldauth.WorldAuth
 api-version: 1.17
 authors: [ LamberKeep ]
 description: A lite Spigot plugin which allows you to add authorization on the server without adding another server or bungeecord.
-website: exo.myvnc.com
 
 commands:
   worldauth:
