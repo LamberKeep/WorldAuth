@@ -15,7 +15,7 @@ public class PlayerQuit implements Listener {
     public void onLeave(PlayerQuitEvent e) {
         Player player = e.getPlayer();
 
-        if (player.getWorld() != Bukkit.getWorld(Objects.requireNonNull(config.getString("worlds.auth")))) {
+        if (storage.get(player).isAuthed()) {
             storage.get(player).updateSession();
             storage.get(player).updateIp();
 

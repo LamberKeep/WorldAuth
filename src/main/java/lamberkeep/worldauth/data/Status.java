@@ -1,10 +1,11 @@
 package lamberkeep.worldauth.data;
 
 import lamberkeep.worldauth.task.Auth;
+import org.bukkit.Bukkit;
 
 import java.util.Objects;
 
-import static lamberkeep.worldauth.WorldAuth.config;
+import static lamberkeep.worldauth.WorldAuth.*;
 
 public class Status {
     private final org.bukkit.entity.Player player;
@@ -53,6 +54,10 @@ public class Status {
         return attempt;
     }
 
+    public Boolean isAuthed() {
+        return storage.get(player).getAuth() == null;
+    }
+
     public void setAuth(Auth auth) {
         this.auth = auth;
     }
@@ -60,5 +65,4 @@ public class Status {
     public Auth getAuth() {
         return auth;
     }
-
 }

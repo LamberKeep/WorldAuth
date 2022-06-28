@@ -20,7 +20,7 @@ public class PlayerChat implements Listener {
         String nick = player.getName();
         String password = data.getConfig().getString(nick + ".password");
 
-        if (player.getWorld() == Bukkit.getWorld(Objects.requireNonNull(config.getString("worlds.auth")))) {
+        if (!storage.get(player).isAuthed()) {
             if (password == null) { // register
                 data.getConfig().set(nick + ".password", message);
                 data.saveConfig();

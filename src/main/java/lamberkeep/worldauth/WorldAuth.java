@@ -1,13 +1,8 @@
 package lamberkeep.worldauth;
 
-import lamberkeep.worldauth.data.Data;
-import lamberkeep.worldauth.data.Locale;
-import lamberkeep.worldauth.data.Status;
-import lamberkeep.worldauth.listener.PlayerChat;
-import lamberkeep.worldauth.listener.PlayerDamage;
-import lamberkeep.worldauth.listener.PlayerJoin;
-import lamberkeep.worldauth.listener.PlayerQuit;
-import lamberkeep.worldauth.task.Auth;
+import lamberkeep.worldauth.data.*;
+import lamberkeep.worldauth.listener.*;
+import org.bukkit.Bukkit;
 import org.bukkit.WorldCreator;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -45,6 +40,11 @@ public final class WorldAuth extends JavaPlugin implements Listener {
 
         saveDefaultConfig();
         config = getConfig();
+
+        // on server restart set all online players as authed
+        // but if data file was deleted they still need to register
+        for (Player player: Bukkit.getOnlinePlayers())
+            storage.put(player, new Status(player));
     }
 
 }

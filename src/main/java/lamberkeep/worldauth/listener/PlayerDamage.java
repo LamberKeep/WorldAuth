@@ -20,7 +20,7 @@ public class PlayerDamage implements Listener {
         Player player = ((Player) event.getEntity()).getPlayer();
 
         assert player != null;
-        if (player.getWorld() == Objects.requireNonNull(Bukkit.getWorld(Objects.requireNonNull(config.getString("worlds.auth"))))) {
+        if (!storage.get(player).isAuthed()) {
             if (event.getCause() == EntityDamageEvent.DamageCause.VOID) {
                 player.teleport(Objects.requireNonNull(Bukkit.getWorld(Objects.requireNonNull(config.getString("worlds.auth")))).getSpawnLocation());
             }
