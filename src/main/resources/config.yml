@@ -1,0 +1,48 @@
+settings:
+  # Allows to use chat like command.
+  # Example: /l password -> password.
+  use-chat: true
+  # Number of authorization attempts.
+  join-attempts: 3
+  # Delete player data when deleting an account.
+  purge-account: true
+
+security:
+  # Encrypt passwords using the SHA-256 algorithm and MAC address as salt.
+  password-hash: true
+  # Will stop the server if the database has not been connected.
+  # Recommendation: do not set this to false, the server may not be secure.
+  storage-error: true
+
+storage:
+  # Available: sqlite, mysql (mariadb), javadb, oracle, postgresql.
+  type: "sqlite"
+  # If you use SQLite, enter the database path instead host, example:
+  # host: "C:/Servers/Minecraft/"
+  host: "localhost"
+  port: "3306"
+  database: "minecraft"
+  table: "worldauth"
+  user: "minecraft"
+  password: "mc"
+
+# Player gamemode after login/register.
+gamemode:
+  # Will use the default value from server.properties file.
+  default: true
+  # If you use default value ignore this line.
+  # Available: SURVIVAL, ADVENTURE, CREATIVE, SPECTATOR.
+  non-default: "SURVIVAL"
+
+# Plugin timers (in seconds).
+timer:
+  # Time for a players to log into the server.
+  register: 30
+  # Time of player login under the same ip w/o auth.
+  session: 1800
+
+worlds:
+  # The world where player authorization will be performed.
+  auth: "world_auth"
+  # The world where new players will go after registration.
+  hub-or-survival: "world"

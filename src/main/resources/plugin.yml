@@ -1,0 +1,40 @@
+name: WorldAuth
+version: '${project.version}'
+main: lamberkeep.worldauth.WorldAuth
+api-version: 1.17
+author: LamberKeep
+description: A lite Spigot plugin which allows you to add authorization on the server without adding another server or bungeecord.
+prefix: WorldAuth
+
+commands:
+  worldauth:
+    description: WorldAuth commands.
+    aliases: wa
+
+  register:
+    description: Register to the server.
+    aliases: reg
+
+  unregister:
+    description: Unregister from the server.
+
+  login:
+    description: Login to the server.
+    aliases: l
+
+  logout:
+    description: Log out from account.
+    aliases: q
+
+  changepassword:
+    description: Change password.
+    aliases: changepass
+
+permissions:
+  worldauth.admin:
+    description: Allows to use admins commands.
+    default: op
+
+  worldauth.unregister:
+    description: Allows to unregister other players.
+    default: op

@@ -1,0 +1,59 @@
+# Locales: https://crowdin.com/project/worldauth
+
+# Placeholders:
+# %player% - player name
+# %display-player% - display player name
+# %ip% - player ip
+# %world% - current player world
+# %online% - current server online
+# %max-online% - max server online
+# %attempts-used% - current used attempts (login only)
+# %attempts-max% - max attempts count (login only)
+
+plugin:
+  usage: "&eUsage: /worldauth reload"
+  reloaded: "&aPlugin reloaded successfully."
+  console: "&cCommand for player only, stop using that! >:("
+  permission: "&cYou don't have permission to do that!"
+
+titles:
+  auth:
+    title: "&aAuthentication"
+    sub-title: "&aEnter password in chat"
+  register:
+    title: "&aRegistration"
+    sub-title: "&aEnter password in chat"
+
+login:
+  usage: "&eUsage: /login <password>"
+  success: "&aLog in successfully (%ip%)."
+  wrong: "&cWrong password, please try again! (%attempts-used%/%attempts-max%)"
+  kick: "&cYou entered the wrong password too many times."
+  already: "&cYou already authed to the server!"
+  not-registered: "&cThis nickname has not registered. Please register."
+
+register:
+  usage: "&eUsage: /register <password>"
+  success: "&aRegistered successfully, have a good time!"
+  already: "&cYou already registered to the server!"
+  exists: "&cAccount with this nickname already exists."
+
+unregister:
+  usage: "&eUsage: /register <password>"
+  success: "&aPlayer unregistered successfully."
+  success-self: "&aUnregistered successfully."
+  not-exists: "&cPlayer doesn't exists."
+
+logout:
+  success: "&aYou have successfully signed out!"
+
+changepass:
+  usage: "&eUsage: /changepassword <old-password> <new-password>"
+  success: "&aPassword changed successfully!"
+  wrong: "&cWrong password, please try again!"
+
+system:
+  join: "&e%player% joined to the server."
+  leave: "&e%player% left the server."
+  time-is-up: "&cAuth time was expired, please try again."
+  command: "&cYou cannot use commands until you logged in!"
